@@ -37,8 +37,6 @@ export const getBoundingBox = (nodes : any[]) => {
     }
 
     return {
-        x : left,
-        y : top,
         width : right - left,
         height : bottom - top,
     }

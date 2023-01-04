@@ -3,44 +3,68 @@ import { canvasTextMeasurer, getBoundingBox, reduceCompute } from "./helper";
 
 
 export class DefaultComputer {
-    private constructor() {}
-    public static new() : Computer {
-        return Computer
-            .new(function (node, context) {
-                const { padding, boundingBox } = node;
+  private constructor() { }
+  public static new(): Computer {
+    return Computer
+      .new(function (node, context) {
+        const { padding, boundingBox } = node;
 
-                boundingBox.width = boundingBox.innerWidth + padding.left + padding.right;
-                boundingBox.height = boundingBox.innerHeight + padding.top + padding.bottom;
-                boundingBox.padding = padding;
+        boundingBox.width = boundingBox.innerWidth + padding.left + padding.right;
+        boundingBox.height = boundingBox.innerHeight + padding.top + padding.bottom;
+        boundingBox.padding = padding;
 
-                delete node.padding;
+        delete node.padding;
 
-                node.fn.forEach((fn : ComputeFunction) => fn.call(this, node, context, this));
-                return node;
-            })
-            .assist("textMeasurer", canvasTextMeasurer)
-            .assist("getBoundingBox", getBoundingBox)
-            .assist("reduceCompute", reduceCompute)
-            .register("text", function (node, context) {
-                const { width, height } = this.use("textMeasurer")(node.text, node);
+        node.fn.forEach((fn: ComputeFunction) => fn.call(this, node, context, this));
+        return node;
+      })
+      .assist("textMeasurer", canvasTextMeasurer)
+      .assist("getBoundingBox", getBoundingBox)
+      .assist("reduceCompute", reduceCompute)
+      .register("text", function (node, context) {
+        const { width, height } = this.use("textMeasurer")(node.text, node);
 
-                node.boundingBox = {
-                    x : context.x,
-                    y : context.y,
-                    innerWidth : width,
-                    innerHeight : height,
-                }
+        node.boundingBox = {
+          x: context.x,
+          y: context.y,
+          innerWidth: width,
+          innerHeight: height,
+        }
 
-                return node;
-            })
-            .register("box", function (node, context) {
-                this.use("reduceCompute")(
-                    node.children,
-                    { x : 0, y : 0 },
-                    (node, context) => {
-                        context.x += 
-                    }
-                )
-            })
-    }
+        return node;
+      }).register("box", function (node, context) {
+        const func = node.direction === "row"
+          ? (node, context) => context.x += node.boundingBox.width
+          : (node, context) => context.y += node.boundingBox.height
+
+        this.use("reduceCompute")(node.children, { x: 0, y: 0 }, func)
+        const { width, height } = this.use("getBoundingBox")(node.children)
+        node.boundingBox = {
+          x: context.x,
+          y: context.y,
+          innerWidth: width,
+          innerHeight: height,
+        }
+
+        return node;
+      }).register("rect", (node, context) => {
+        node.boundingBox = {
+          x : context.x,
+          y : context.y,
+          innerWidth : node.width,
+          innerHeight : node.height,
+        }
+
+        return node;
+      }).register("circle", (node, context) => {
+        node.boundingBox = {
+          x : context.x,
+          y : context.y,
+          innerWidth : node.radius * 2,
+          innerHeight : node.radius * 2,
+        }
+
+        return node;
+      })
+  }
 }
