@@ -1,21 +1,36 @@
-import { Creator } from "./creator";
-import { Color, Padding } from "./helper";
+const root = (node, _, Creator) => ({
+    padding : Creator.Padding.zero,
+    backgroundColor : Creator.Color.black,
+    fn : [],
+    data : {},
+    ...node
+})
 
-export class DefaultCreator {
-    private constructor() {}
-    public static new() : Creator {
-        // dirty consume
-        return Creator.new((param) => ({
-            padding : Padding.zero,
-            backgroundColor : Color.black,
-            fn : [],
-            data : {},
-            ...param
-        })).register("box", (param) => ({
-            direction : "row",
-            children : [],
-            ...param,
-            type : "box",
-        }))
-    }
-}
+const text = (node, _, Creator) => ({
+    color : Creator.Color.black,
+    fontFamily : Creator.Font.Main,
+    fontSize : 12,
+    fontWeight : 400,
+    fontStyle : "normal",
+    text : "",
+    ...node,
+})
+
+const box = (node) => ({
+    direction : "row",
+    children : [],
+    ...node,
+})
+
+const rect = (node) => ({
+    width : 0,
+    height : 0,
+    ...node,
+})
+
+const circle = (node) => ({
+    radius : 0,
+    ...node,
+})
+
+export { root, text, box, rect, circle }

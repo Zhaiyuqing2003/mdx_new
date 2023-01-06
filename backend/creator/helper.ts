@@ -9,6 +9,16 @@ const assign = <T extends object, S extends object>(source : T, target : S) : T 
     return target as T & S;
 }
 
+const getter = <T extends Record<string, () => any>>(source : T) : { [P in keyof T] : ReturnType<T[P]> } => {
+    const result : any = {};
+    for (const key in source) {
+        Object.defineProperty(result, key, {
+            get : source[key]
+        });
+    }
+    return result;
+}
+
 export type PaddingObject = {
     left : number;
     top : number;
@@ -24,58 +34,24 @@ export type PaddingCreator = {
     zero : PaddingObject;
 }
 
-export const Padding : PaddingCreator = assign({
-    get zero() {
-        return { left: 0, top: 0, right: 0, bottom: 0 }
-    }
-}, (
-    first : number,
-    second? : number,
-    third? : number,
-    fourth? : number
-) => {
-    if (first === undefined) {
-        Raise.Error.paddingParameterInvalid();
-    }
-    if (second === undefined) {
-        return {
-            left: first,
-            top: first,
-            right: first,
-            bottom: first,
-        };
-    }
-    if (third === undefined) {
-        return {
-            left: first,
-            top: second,
-            right: first,
-            bottom: second,
-        };
-    }
-    if (fourth === undefined) {
-        return {
-            left: first,
-            top: second,
-            right: third,
-            bottom: second,
-        };
-    }
-    return {
-        left: first,
-        top: second,
-        right: third,
-        bottom: fourth,
-    };
+export const Padding : PaddingCreator = assign(getter({
+    zero: () => ({ left: 0, top: 0, right: 0, bottom: 0 })
+}), (left : number, top ?: number, right ?: number, bottom ?: number) => {
+    left ??= Raise.Error.paddingParameterInvalid();
+    top ??= right = bottom = left;
+    right ??= left;
+    bottom ??= top;
+    return { left, top, right, bottom };
 })
 
-export const Color = assign({
-    get black() {
-        return { r : 0, g : 0, b : 0, a : 1 }
-    },
-    get transparent() {
-        return { r : 0, g : 0, b : 0, a : 0 }
-    }
-}, (r : number, g : number, b : number, a = 1.0) => ({
+export const Color = assign(getter({
+    black : () => ({ r : 0, g : 0, b : 0, a : 1 }),
+    transparent : () => ({ r : 0, g : 0, b : 0, a : 0 }),
+}), (r : number, g : number, b : number, a = 1.0) => ({
     r, g, b, a
 }))
+
+export const Font = assign({
+    Math : "KaTex_Math",
+    Main : "KaTex_Main",
+}, () => {})

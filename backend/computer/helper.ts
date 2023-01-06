@@ -1,5 +1,3 @@
-import { ComputeFunction, Computer } from "./computer";
-
 // @incomplete
 type TextInfoNode = {
     fontFamily : string;
@@ -46,7 +44,7 @@ export const reduceCompute = function (
 ) {
     for (const node of nodes) {
         // this = Computer
-        this.compute(node, initialContext);
+        this.run(node, initialContext);
         changeContext(node, initialContext);
     }
 }
